@@ -39,6 +39,7 @@ dependencies:
   permission_handler: ^5.1.0+2
   dart_ipify: ^1.0.2
   connectivity: ^3.0.6
+  google_mobile_ads: ^0.13.2
   
 dev_dependencies:
   flutter_test:

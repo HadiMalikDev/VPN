@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:openvpnapppractice/screens/main%20screen/main_screen.dart';
 import 'package:openvpnapppractice/screens/wrapper_screen/wrapper_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 

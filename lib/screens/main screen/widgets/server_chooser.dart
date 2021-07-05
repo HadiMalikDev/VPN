@@ -35,15 +35,18 @@ class _ServersListState extends State<ServersList> {
     return ListView.builder(
       shrinkWrap: true,
       itemCount: widget.viewModel.servers.length,
-      itemBuilder: (_, i) => LocationTile(
-        server: widget.viewModel.servers[i],
-        index: i,
-        onTap: () {
-          setState(() {
-            widget.viewModel.selected=i;
-          });
-        },
-        selected: widget.viewModel.selected == i,
+      itemBuilder: (_, i) => Container(
+        margin: EdgeInsets.symmetric(vertical: 10),
+        child: LocationTile(
+          server: widget.viewModel.servers[i],
+          index: i,
+          onTap: () {
+            setState(() {
+              widget.viewModel.selected=i;
+            });
+          },
+          selected: widget.viewModel.selected == i,
+        ),
       ),
     );
   }
@@ -76,7 +79,7 @@ class LocationTile extends StatelessWidget {
         server.serverName,
         style: TextStyle(color: klocationTileTextColor),
       ),
-      trailing: Image.network('https://www.countryflags.io/${server.countryCode}/flat/16.png'),
+      trailing: Image.network('https://www.countryflags.io/${server.countryCode}/flat/32.png'),
     );
   }
 }

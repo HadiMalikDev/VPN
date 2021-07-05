@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_openvpn/flutter_openvpn.dart';
 import 'package:injectable/injectable.dart';
-import 'package:openvpnapppractice/m.dart';
 import 'package:path_provider/path_provider.dart';
 
 @singleton
@@ -13,6 +12,7 @@ class OpenVPN {
   String vpnStatus = 'Not Connected';
   bool isInitialized = false;
   StreamController<String> controller = StreamController<String>.broadcast();
+  bool _vpnStarted = false;
   init() async {
     if (!isInitialized) {
       await FlutterOpenvpn.init();
@@ -33,6 +33,7 @@ class OpenVPN {
   }
 
   loadVPNProfile(String serverInformation) async {
+    if (_vpnStarted == true) return;
     try {
       await FlutterOpenvpn.lunchVpn(
         serverInformation,
@@ -42,13 +43,18 @@ class OpenVPN {
           vpnStatus = status;
           controller.add(vpnStatus);
         },
+        user: 'vpnbook',
+        pass: 'e9s5w7s',
       );
+      _vpnStarted = true;
     } catch (e) {}
   }
 
   stopVPN() async {
+    if (_vpnStarted == false) return;
     try {
       await FlutterOpenvpn.stopVPN();
+      _vpnStarted=false;
     } catch (e) {
       print(e);
     }
@@ -57,5 +63,10 @@ class OpenVPN {
   //Stream that returns the vpnStatus. Implemented since the original function did not possess one.
   Stream<String> vpnStatusUpdate() {
     return controller.stream;
+  }
+
+  //Used only when the user stops the VPN from the notification panel
+  overrideStoppedStatus(bool isStarted){
+    _vpnStarted=isStarted;
   }
 }

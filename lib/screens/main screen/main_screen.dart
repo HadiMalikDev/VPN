@@ -14,7 +14,7 @@ class MainScreen extends StatelessWidget {
     return ViewModelBuilder<MainScreenViewModel>.nonReactive(
       fireOnModelReadyOnce: true,
       initialiseSpecialViewModelsOnce: true,
-      onModelReady: (viewModel) => viewModel.initServers(),
+      onModelReady: (viewModel) => viewModel.initAll(),
       builder: (_, model, __) => Scaffold(
         backgroundColor: kbackgroundColor,
         body: SafeArea(

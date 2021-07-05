@@ -15,14 +15,21 @@ class MainScreenViewModel extends BaseViewModel {
   OpenVPN _vpn = getIt<OpenVPN>();
   ConnectionStatus connectionStatus = ConnectionStatus.Disconnected;
   List<Server> servers = [];
-  String currentIPAddress='';
+  String currentIPAddress = '';
   Stream<String> get vpnStatus {
     return _vpn.vpnStatusUpdate().map(_mapVPNStatus);
   }
-  MainScreenViewModel(){
-    getIPAddress();
-    
+
+  initAll() async {
+    await runBusyFuture(_init());
+    notifyListeners();
   }
+
+  _init() async {
+    await getIPAddress();
+    await _getServers();
+  }
+
   String _mapVPNStatus(event) {
     switch (event) {
       case "AUTH":
@@ -42,6 +49,7 @@ class MainScreenViewModel extends BaseViewModel {
       case "CONNECTED":
         return "Connection successfully established";
       case "DISCONNECTED":
+        _updateOnDisconnection(); //In case the user uses the notification instead of the app button to end the VPN.
         return "Connection successfully terminated";
       default:
         return "";
@@ -59,29 +67,39 @@ class MainScreenViewModel extends BaseViewModel {
       connectionStatus = ConnectionStatus.Disconnected;
     }
   }
-  getIPAddress()async{
-    currentIPAddress='Fetching IP Address...';
+
+  getIPAddress() async {
+    currentIPAddress = 'Fetching IP Address...';
     notifyListeners();
     await Future.delayed(Duration(milliseconds: 500));
-    currentIPAddress= await Ipify.ipv64();
+    currentIPAddress = await Ipify.ipv64();
     notifyListeners();
   }
+
   _getServerInformation() {
     return servers[selected].serverInformation;
   }
-  
+
   stopVPN() async {
     try {
       await _vpn.stopVPN();
-      connectionStatus = ConnectionStatus.Disconnected;
-      notifyListeners();
-      getIPAddress();
+      await _updateOnDisconnection();
     } catch (e) {
       rethrow;
     }
   }
 
+  _updateOnDisconnection() async {
+    //Used to update the status of openvpn class when user stops VPN from notification panel.
+    _vpn.overrideStoppedStatus(false);
+    
+    connectionStatus = ConnectionStatus.Disconnected;
+    notifyListeners();
+    getIPAddress();
+  }
+
   _checkIfConnected() async {
+    /* Incorrect Implementation
     late StreamSubscription subscription;
     subscription = _vpn.controller.stream.listen((event) async {
       if (event == "CONNECTED") {
@@ -93,14 +111,15 @@ class MainScreenViewModel extends BaseViewModel {
 
       }
     });
-  }
-
-  initServers() async {
-    await runBusyFuture(getServers(), throwException: true);
+    */
+    await _vpn.controller.stream.firstWhere((val) => val == "CONNECTED");
+    connectionStatus = ConnectionStatus.Connected;
     notifyListeners();
+    getIPAddress();
+    return;
   }
 
-  getServers() async {
+  _getServers() async {
     servers = await getIt<VPNServers>().fetchServersList();
   }
 
